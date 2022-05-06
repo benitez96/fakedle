@@ -89,9 +89,14 @@ export const Game = () => {
 
   }, [handleKeyDown]);
 
+  useEffect(() =>{
+    document.getElementById('input')?.focus()
+
+  }, []);
 
   return (
     <div className="flex flex-col justify-between">
+      <input id='input' hidden />
       {
         words.map( (word, wordIndex) => (
           <div className="flex flex-row content-center justify-center" key={wordIndex}>
