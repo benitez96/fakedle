@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 // import Swal from 'sweetalert2'
 // import 'sweetalert2/src/sweetalert2.scss';
 
@@ -14,11 +14,27 @@ export const Game = () => {
     Array.from({ length: 6 }, () => Array(answer.length).fill(''))
   );
 
-
   const handleKeyDown = useCallback((e: KeyboardEvent) =>{
+    mappingKeys(e.key)
+  }, [status, turn, words])
+
+  const handleInputMapping = useCallback((e: InputEvent) =>{
+    e.preventDefault()
+    if (e.inputType == 'deleteContentBackward'){
+      mappingKeys('Backspace')
+      return
+    }
+    if (e.inputType == 'insertLineBreak'){
+      mappingKeys('Enter')
+      return
+    }
+    mappingKeys(e.data || '')
+  }, [status, turn, words])
+
+  const mappingKeys = useCallback((key: string) =>{
 
     if (status === 'playing') {
-      switch ( e.key ) {
+      switch ( key ) {
 
         case 'Enter':
           if ( words[turn].some( l => !l ) ) return;
@@ -49,11 +65,11 @@ export const Game = () => {
 
 
         default:
-          if (e.key.length === 1 && e.key.match(/[a-z]/i)){
+          if (key.length === 1 && key.match(/[a-z]/i)){
           const firstEmptyIndex = words[turn].findIndex(letter => letter === '');
           if (firstEmptyIndex === -1) return;
 
-          words[turn][firstEmptyIndex] = e.key.toUpperCase();
+          words[turn][firstEmptyIndex] = key.toUpperCase();
 
           setWords([...words]);
 
@@ -61,7 +77,7 @@ export const Game = () => {
         }
       }
 
-    } else if ( e.key === 'Enter' ) {
+    } else if ( key === 'Enter' ) {
       // handle reset game
       setAnswer( WORDS[Math.floor(Math.random() * WORDS.length)] )
       setWords( Array.from({ length: 6 }, () => Array(answer.length).fill('')) )
@@ -83,20 +99,29 @@ export const Game = () => {
   }, [answer])
 
 
+  // useEffect(() =>{
+  //   window.addEventListener('keydown', handleKeyDown);
+  //     return () => window.removeEventListener('keydown', handleKeyDown);
+
+  // }, [handleKeyDown]);
+
   useEffect(() =>{
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
+    const inputElement = document.getElementById('input')
+    if (!inputElement)
+      return
 
-  }, [handleKeyDown]);
+     
+    inputElement.addEventListener('beforeinput', handleInputMapping)
 
-  useEffect(() =>{
-    document.getElementById('input')?.focus()
+    return () => inputElement.removeEventListener('beforeinput', handleInputMapping)
 
-  }, []);
+  }, [handleInputMapping]);
+
+
 
   return (
-    <div className="flex flex-col justify-between">
-      <input id='input' hidden />
+    <div className="flex flex-col justify-between" onClick={() => document.getElementById('input')?.focus()}>
+      <input id='input' value='' style={{position: 'absolute', left: '-9999px'}}/>
       {
         words.map( (word, wordIndex) => (
           <div className="flex flex-row content-center justify-center" key={wordIndex}>
