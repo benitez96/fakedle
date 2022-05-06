@@ -1,18 +1,19 @@
 import {useCallback, useEffect, useMemo, useState} from "react";
+// import Swal from 'sweetalert2'
+// import 'sweetalert2/src/sweetalert2.scss';
+
 import {Field} from "./Field";
 
-
 export const Game = () => {
-  const WORDS = ['RUEDA', 'AMARILLO', 'VERDE', 'PROGRAMACION', 'ANIMAL', 'TRABAJO']
+  const WORDS = ['RUEDA', 'CUERDA', 'VERDE', 'CASILLA', 'ANIMAL', 'TRABAJO']
 
   const [answer, setAnswer] = useState(WORDS[Math.min(Math.floor(Math.random() * 10), WORDS.length - 1)])
-  console.log(answer)
-
   const [status, setStatus] = useState<'playing' | 'finished'>('playing');
   const [turn, setTurn] = useState<number>(0);
   const [words, setWords] = useState<string[][]>(
     Array.from({ length: 6 }, () => Array(answer.length).fill(''))
   );
+
 
   const handleKeyDown = useCallback((e: KeyboardEvent) =>{
 
@@ -90,19 +91,19 @@ export const Game = () => {
 
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col justify-between">
       {
         words.map( (word, wordIndex) => (
           <div className="flex flex-row content-center justify-center" key={wordIndex}>
             {
               word.map( (letter: string, letterIndex: number) => {
                 const isCorrect: boolean = 
-                  letter &&
+                  !!letter &&
                   wordIndex < turn && // verificamos que el turno haya terminado
                   letter === answer[letterIndex]
 
                 const isPresent: boolean =
-                  letter &&
+                  !!letter &&
                   wordIndex < turn &&
                   letter !== answer[letterIndex] &&
                   answer.includes(letter)
@@ -113,7 +114,7 @@ export const Game = () => {
                     isCorrect={isCorrect} 
                     isPresent={isPresent} 
                   >
-                    { letter }
+                    <p>{letter}</p> 
                   </Field>
                   )
               })
@@ -123,6 +124,20 @@ export const Game = () => {
           </div>
 
         ) )
+
+      }
+      {
+        status == 'finished' && words[turn - 1]?.join('') == answer 
+          ?
+          (
+            <p className="pt-5 text-4xl text-center transition duration-300 dark:text-white">You won!</p>
+          )
+          : status == 'finished' && words[turn - 1]?.join('') != answer 
+          ?
+          (
+            <p className="pt-5 text-4xl text-center transition duration-300 dark:text-white">You lost!</p>
+          )
+          : ('')
 
       }
     </div>
